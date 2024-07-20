@@ -9,11 +9,11 @@ class Product {
 typedef CartChangedCallback = Function(Product product, bool inCart);
 
 class ShoppingListItem extends StatelessWidget {
-  ShoppingListItem(
+  const ShoppingListItem(
       {required this.product,
       required this.inCart,
-      required this.onCartChanged})
-      : super(key: ObjectKey(product));
+      required this.onCartChanged,
+      super.key});
 
   final Product product;
   final bool inCart;
@@ -38,7 +38,7 @@ class ShoppingListItem extends StatelessWidget {
       },
       leading: CircleAvatar(
         backgroundColor: _getColor(context),
-        child: Text(product.name),
+        child: Text(product.name[0]),
       ),
       title: Text(
         product.name,
@@ -48,16 +48,56 @@ class ShoppingListItem extends StatelessWidget {
   }
 }
 
-void main() {
-  runApp(MaterialApp(
-    home: Scaffold(
-      body: Center(
-        child: ShoppingListItem(
-          product: const Product(name: "Chips"),
-          inCart: false,
-          onCartChanged: (product, inCart) {},
-        ),
+class ShoppingList extends StatefulWidget {
+  const ShoppingList({required this.products, super.key});
+
+  final List<Product> products;
+
+  @override
+  State<ShoppingList> createState() => _ShoppingListState();
+}
+
+class _ShoppingListState extends State<ShoppingList> {
+  final _shoppingCart = <Product>{};
+
+  void _handleCartChanged(Product product, bool inCart) {
+    setState(() {
+      if (!inCart) {
+        _shoppingCart.add(product);
+      } else {
+        _shoppingCart.remove(product);
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text("Shopping List"),
       ),
+      body: ListView(
+        padding: const EdgeInsets.symmetric(vertical: 8),
+        children: widget.products.map((product) {
+          return ShoppingListItem(
+              product: product,
+              inCart: _shoppingCart.contains(product),
+              onCartChanged: _handleCartChanged);
+        }).toList(),
+      ),
+    );
+  }
+}
+
+void main() {
+  runApp(const MaterialApp(
+    title: 'Shopping App',
+    home: ShoppingList(
+      products: [
+        Product(name: 'Eggs'),
+        Product(name: 'Chips'),
+        Product(name: 'Chocolate chips')
+      ],
     ),
   ));
 }
