@@ -1,47 +1,63 @@
 import 'package:flutter/material.dart';
 
-class Counter extends StatefulWidget {
-  const Counter({super.key});
+class Product {
+  const Product({required this.name});
 
-  @override
-  State<Counter> createState() => _CounterState();
+  final String name;
 }
 
-class _CounterState extends State<Counter> {
-  int _counter = 0;
+typedef CartChangedCallback = Function(Product product, bool inCart);
 
-  void _increment() {
-    setState(() {
-      _counter++;
-    });
+class ShoppingListItem extends StatelessWidget {
+  ShoppingListItem(
+      {required this.product,
+      required this.inCart,
+      required this.onCartChanged})
+      : super(key: ObjectKey(product));
+
+  final Product product;
+  final bool inCart;
+  final CartChangedCallback onCartChanged;
+
+  Color _getColor(BuildContext context) {
+    return inCart ? Colors.black54 : Theme.of(context).primaryColor;
   }
 
-  void _decrement() {
-    setState(() {
-      _counter--;
-    });
+  TextStyle? _getTextStyle(BuildContext context) {
+    if (!inCart) return null;
+
+    return const TextStyle(
+        color: Colors.black54, decoration: TextDecoration.lineThrough);
   }
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: <Widget>[
-        ElevatedButton(onPressed: _increment, child: const Text("Increment")),
-        const SizedBox(width: 16),
-        Text('Count: $_counter'),
-        const SizedBox(width: 16),
-        ElevatedButton(onPressed: _decrement, child: const Text("Decrement")),
-      ],
+    return ListTile(
+      onTap: () {
+        onCartChanged(product, inCart);
+      },
+      leading: CircleAvatar(
+        backgroundColor: _getColor(context),
+        child: Text(product.name),
+      ),
+      title: Text(
+        product.name,
+        style: _getTextStyle(context),
+      ),
     );
   }
 }
 
 void main() {
-  runApp(const MaterialApp(
-      home: Scaffold(
-    body: Center(
-      child: Counter(),
+  runApp(MaterialApp(
+    home: Scaffold(
+      body: Center(
+        child: ShoppingListItem(
+          product: const Product(name: "Chips"),
+          inCart: false,
+          onCartChanged: (product, inCart) {},
+        ),
+      ),
     ),
-  )));
+  ));
 }
